@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ES5",            // For compatibility with most browsers
+    "module": "ES6",            // For using standard JavaScript modules
+    "outDir": "./dist",         // Directory to output the compiled JS files
+    "rootDir": "./src",         // Directory of the source TypeScript files
+    "strict": true,             // Enables strict type checking options
+    "esModuleInterop": true,    // Enables compilation of ES Modules to commonjs
+    "moduleResolution": "node", // Good for working with node_modules
+
+  },
+  "include": [
+    "src/**/*"                 // Includes all files in the src folder
+  ]
+}
