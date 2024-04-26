@@ -22,13 +22,13 @@ export class CoinState {
     public blockChainDetails: string = "";
 
     // update: updates the state of the coin givne the JSON response Object 
-    public update(bcObj:BlockchainInfo, status:boolean) {
+    public update(bcObj:BlockchainInfo, status:boolean, numPeers: number, latestTime: number) {
         this.isUp = status;
         this.numBlocks = bcObj.blocks;
         this.bestBlockHash = bcObj.bestblockhash;
         this.difficulty = bcObj.difficulty;
-        //ignore peers connected
-        this.latestBlockTime = bcObj.mediantime;
+        this.peersConnected = numPeers;
+        this.latestBlockTime = latestTime;
         this.blockChainDetails = JSON.stringify(bcObj, null, 2).replace(/,/g, ',\n');
         this.updateDisplay();
     }
@@ -63,6 +63,22 @@ export class CoinState {
             latestBlockTimeTitle && (latestBlockTimeTitle.textContent = "Latest Block Time");
             latestBlockTimeField && (latestBlockTimeField.textContent = new Date(this.latestBlockTime * 1000).toLocaleString());
         }
+        const peersContainer = document.querySelector("#num-peers");
+        if (peersContainer) {
+            const peersTitle = peersContainer.querySelector(".blockchain-summary-title");
+            const peersField = peersContainer.querySelector(".blockchain-summary-value");
+            peersTitle && (peersTitle.textContent = "Active Peers");
+            peersField && (peersField.textContent = this.peersConnected.toString());
+        }
+        const networkHashrateContainer = document.querySelector("#hash-rate");
+        if(networkHashrateContainer) {
+            const networkHashrateTitle = networkHashrateContainer.querySelector(".blockchain-summary-title");
+            const networkHashrateField = networkHashrateContainer.querySelector(".blockchain-summary-value");
+            networkHashrateTitle && (networkHashrateTitle.textContent = "Hash rate");
+            // calculate the hash rate
+            const hashRate = this.difficulty * Math.pow(2, 32) / 600;
+            networkHashrateField && (networkHashrateField.textContent = String(hashRate) + " H/s");
+        }
     }
 
     public updateDisplay() {
@@ -73,9 +89,5 @@ export class CoinState {
 
     public displayDown() {
         this.updateDisplay();
-    }
-    // separate the peers connected because it requires another request 
-    public updatePeersConnected() {
-
     }
 }
