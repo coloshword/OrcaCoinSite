@@ -60,13 +60,13 @@ async function getBestBlockInfo() {
     }
 }
 
+
 async function main() {
     const status = await getStatus();
-    var coinState = new CoinState();
     const bcObj = await getBlockchainInfo();
     const peerInfo = await getPeerInfo();
     const bestBlockInfo : any  = await getBestBlockInfo();
-
+    var coinState = new CoinState();
     if (status) {
         coinState.update(bcObj, status, peerInfo.length, bestBlockInfo.time);  
     } else {
