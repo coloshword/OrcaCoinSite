@@ -1,5 +1,6 @@
 import axios from "axios";
 import * as display from "./display";
+import { CoinState } from "./CoinState";
 
 /** getStatus: gets the status of Orcacoin (if bootstrap node HTTP server 130.245.173.208 is up) */
 async function getStatus() {
@@ -31,9 +32,13 @@ async function getBlockchainInfo() {
 
 async function main() {
     const status = await getStatus();
-    display.displayNetworkStatus(status);
+    var coinState = new CoinState();
     const bcObj = await getBlockchainInfo();
-    console.log(JSON.stringify(bcObj));
+    if (status) {
+        coinState.update(bcObj, status);  
+    } else {
+        coinState.displayDown();
+    }
 }
 
 main(); 

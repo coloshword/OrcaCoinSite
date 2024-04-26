@@ -11,3 +11,13 @@ export function displayNetworkStatus(isUp: boolean) {
 
 }
 
+export function displayBlockchainInfo(bcDetails: string ) {
+    const bcContainer = document.querySelector('.blockchain-details') as HTMLElement;
+    if (bcContainer != null) {
+        bcContainer.innerHTML = `<pre>${bcDetails}</pre>`;
+    }
+}
+
+export function displayBlockChainSummary(bcObj: Object) {
+    const bcSummary = document.querySelector('.blockchain-summary') as HTMLElement;
+}
