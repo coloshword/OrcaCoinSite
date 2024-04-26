@@ -1,9 +1,8 @@
-// CoinState: class to store state of coin
-
 import * as display from "./display";
+
 type BlockchainInfo = {
     bestblockhash: string;
-    bip9_softforks: any;  // ignore nested structures
+    bip9_softforks: any;
     blocks: number;
     chain: string;
     difficulty: number;
@@ -21,64 +20,51 @@ export class CoinState {
     public latestBlockTime: number = 0;
     public blockChainDetails: string = "";
 
-    // update: updates the state of the coin givne the JSON response Object 
-    public update(bcObj:BlockchainInfo, status:boolean, numPeers: number, latestTime: number) {
+    public update(bcObj: BlockchainInfo, status: boolean, numPeers: number, latestTime: number) {
         this.isUp = status;
-        this.numBlocks = bcObj.blocks;
-        this.bestBlockHash = bcObj.bestblockhash;
-        this.difficulty = bcObj.difficulty;
-        this.peersConnected = numPeers;
-        this.latestBlockTime = latestTime;
-        this.blockChainDetails = JSON.stringify(bcObj, null, 2).replace(/,/g, ',\n');
+        if (status) {
+            this.numBlocks = bcObj.blocks;
+            this.bestBlockHash = bcObj.bestblockhash;
+            this.difficulty = bcObj.difficulty;
+            this.peersConnected = numPeers;
+            this.latestBlockTime = latestTime;
+            this.blockChainDetails = JSON.stringify(bcObj, null, 2).replace(/,/g, ',\n');
+        } else {
+            this.numBlocks = NaN;
+            this.bestBlockHash = "N/A";
+            this.difficulty = NaN;
+            this.peersConnected = NaN;
+            this.latestBlockTime = NaN;
+            this.blockChainDetails = "N/A";
+        }
         this.updateDisplay();
     }
 
-    /** updateSummary: updates the view of the summary (first half) */
     public updateSummary() {
-        const heightContainer = document.querySelector("#block-height");
-        if (heightContainer) {
-            const heightTitle = heightContainer.querySelector(".blockchain-summary-title");
-            const heightField = heightContainer.querySelector(".blockchain-summary-value");
-            heightTitle && (heightTitle.textContent = "Block Height");
-            heightField && (heightField.textContent = this.numBlocks.toString());
+        const setFieldText = (selectorId: string, titleText: string, valueText: string | number, isUp: boolean) => {
+            const container = document.querySelector(selectorId);
+            if (container) {
+                const title = container.querySelector(".blockchain-summary-title");
+                const value = container.querySelector(".blockchain-summary-value");
+                title && (title.textContent = titleText);
+                value && (value.textContent = isUp ? ((typeof valueText === 'number' && isNaN(valueText)) ? "N/A" : valueText.toString()) : "N/A");
+            }
         }
-        const diffContainer = document.querySelector("#difficulty");
-        if (diffContainer) {
-            const diffTitle = diffContainer.querySelector(".blockchain-summary-title");
-            const diffField = diffContainer.querySelector(".blockchain-summary-value");
-            diffTitle && (diffTitle.textContent = "Difficulty");
-            diffField && (diffField.textContent = this.difficulty.toString());
-        }
-        const hashContainer = document.querySelector("#best-block-hash");
-        if (hashContainer) {
-            const hashTitle = hashContainer.querySelector(".blockchain-summary-title");
-            const hashField = hashContainer.querySelector(".blockchain-summary-value");
-            hashTitle && (hashTitle.textContent = "Best Block Hash");
-            hashField && (hashField.textContent = this.bestBlockHash);
-        }
-        const latestBlockTimeContainer = document.querySelector("#latest-block-time");
-        if (latestBlockTimeContainer) {
-            const latestBlockTimeTitle = latestBlockTimeContainer.querySelector(".blockchain-summary-title");
-            const latestBlockTimeField = latestBlockTimeContainer.querySelector(".blockchain-summary-value");
-            latestBlockTimeTitle && (latestBlockTimeTitle.textContent = "Latest Block Time");
-            latestBlockTimeField && (latestBlockTimeField.textContent = new Date(this.latestBlockTime * 1000).toLocaleString());
-        }
-        const peersContainer = document.querySelector("#num-peers");
-        if (peersContainer) {
-            const peersTitle = peersContainer.querySelector(".blockchain-summary-title");
-            const peersField = peersContainer.querySelector(".blockchain-summary-value");
-            peersTitle && (peersTitle.textContent = "Active Peers");
-            peersField && (peersField.textContent = this.peersConnected.toString());
-        }
-        const networkHashrateContainer = document.querySelector("#hash-rate");
-        if(networkHashrateContainer) {
-            const networkHashrateTitle = networkHashrateContainer.querySelector(".blockchain-summary-title");
-            const networkHashrateField = networkHashrateContainer.querySelector(".blockchain-summary-value");
-            networkHashrateTitle && (networkHashrateTitle.textContent = "Hash rate");
-            // calculate the hash rate
+
+        setFieldText("#block-height", "Block Height", this.numBlocks, this.isUp);
+        setFieldText("#difficulty", "Difficulty", this.difficulty, this.isUp);
+        setFieldText("#best-block-hash", "Best Block Hash", this.bestBlockHash, this.isUp);
+        setFieldText("#latest-block-time", "Latest Block Time", this.latestBlockTime ? new Date(this.latestBlockTime * 1000).toLocaleString() : "N/A", this.isUp);
+        setFieldText("#num-peers", "Active Peers", this.peersConnected, this.isUp);
+        setFieldText("#hash-rate", "Hash Rate", this.calculateHashRate(), this.isUp);
+    }
+
+    private calculateHashRate() {
+        if (!isNaN(this.difficulty)) {
             const hashRate = this.difficulty * Math.pow(2, 32) / 600;
-            networkHashrateField && (networkHashrateField.textContent = String(hashRate) + " H/s");
+            return `${hashRate.toFixed(2)} H/s`;
         }
+        return "N/A";
     }
 
     public updateDisplay() {
@@ -88,6 +74,7 @@ export class CoinState {
     }
 
     public displayDown() {
+        this.isUp = false;
         this.updateDisplay();
     }
 }
